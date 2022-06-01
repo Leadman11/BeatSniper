@@ -25,15 +25,16 @@ def check_error(resp):
 
 
 
-RANK = 1741  # User Input
-snipe_maps = {}
+RANK = int(input("Enter rank: "))
+snipe_maps = {}     # {'Hash': Freq}
 
+# Gets a list of 50 players on the same page as input rank
 players_page_num = math.floor(RANK / 50) + 1
 player_resp = requests.get(f'https://scoresaber.com/api/players?page={players_page_num}', headers=headers)
 check_error(player_resp)
-
 player_list = json.loads(player_resp.text)["players"]
 
+# Fill and sort snipe_maps
 for player in player_list:
     player_id = player["id"]
     player_scores_resp = requests.get('https://scoresaber.com/api/player/' + player_id + '/scores?limit=8&sort=top', headers=headers)
@@ -48,31 +49,14 @@ for player in player_list:
 
 sorted_snipe_maps = {k: v for k, v in sorted(snipe_maps.items(), key=lambda item: item[1])}
 
+# Output top 20 most common maps
 count = 0
 for hash in sorted_snipe_maps:
     if count < 20:
         map_resp = requests.get('https://api.beatsaver.com/maps/hash/' + hash)
         check_error(map_resp)
         map = json.loads(map_resp.text)
-        print(map["id"] + ' ' + map["metadata"]["songAuthorName"] + ' - ' + map['metadata']['songName'])
+        print(str(sorted_snipe_maps[hash] * -1) + ' ' + map["id"] + ' ' + map["metadata"]["songAuthorName"] + ' - ' + map['metadata']['songName'])
         count += 1
     else:
         break
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
