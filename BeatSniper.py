@@ -25,7 +25,7 @@ def check_error(resp):
 
 
 
-RANK = 822  # User Input
+RANK = 1741  # User Input
 snipe_maps = {}
 
 players_page_num = math.floor(RANK / 50) + 1
@@ -35,30 +35,30 @@ check_error(player_resp)
 player_list = json.loads(player_resp.text)["players"]
 
 for player in player_list:
-    player_id = player[id]
+    player_id = player["id"]
     player_scores_resp = requests.get('https://scoresaber.com/api/player/' + player_id + '/scores?limit=8&sort=top', headers=headers)
     check_error(player_scores_resp)
     player_scores = json.loads(player_scores_resp.text)["playerScores"]
     for score in player_scores:
         song_hash = score["leaderboard"]["songHash"]
         if song_hash in snipe_maps.keys():
-            snipe_maps.update( {song_hash: snipe_maps[song_hash] + 1} )
+            snipe_maps.update( {song_hash: snipe_maps[song_hash] - 1} )
         else:
-            snipe_maps[song_hash] = 1
+            snipe_maps[song_hash] = -1
 
+sorted_snipe_maps = {k: v for k, v in sorted(snipe_maps.items(), key=lambda item: item[1])}
 
+count = 0
+for hash in sorted_snipe_maps:
+    if count < 20:
+        map_resp = requests.get('https://api.beatsaver.com/maps/hash/' + hash)
+        check_error(map_resp)
+        map = json.loads(map_resp.text)
+        print(map["id"] + ' ' + map["metadata"]["songAuthorName"] + ' - ' + map['metadata']['songName'])
+        count += 1
+    else:
+        break
 
-
-# player_id = 76561198048064878
-# player_scores_resp = requests.get(f'https://scoresaber.com/api/player/{player_id}/scores?limit=8&sort=top', headers=headers)
-# check_error(player_scores_resp)
-# player_scores = json.loads(player_scores_resp.text)["playerScores"]
-# for score in player_scores:
-#     song_hash = score["leaderboard"]["songHash"]
-#     if song_hash in snipe_maps.keys():
-#         snipe_maps.update( {song_hash: snipe_maps[song_hash] + 1} )
-#     else:
-#         snipe_maps[song_hash] = 1
 
 
 
